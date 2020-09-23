@@ -11,9 +11,10 @@ readWUFI supplies the f.getWUFIPlusdata function to read WUFIPlus data
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+Install package with
 
 ``` r
+# devtools::install_github("SebaStad/readWUFI")
 library(readWUFI)
 ```
 
