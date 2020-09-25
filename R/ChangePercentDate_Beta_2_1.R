@@ -18,86 +18,7 @@ f.ConvertPercentageDate <- function(DateColumn){
                 #(any(as.numeric(substrRight(PointColumn ,2))<1) && any(as.numeric(substrRight(PointColumn ,2))>0)))
                 any(findInterval(as.numeric(substrRight(PointColumn ,2)),c(0.00001,0.999999))==1))
   # Falls testvar == FALSE
-  if(testvar==FALSE){
-    # Alter Code + Kommentare. steht noch drinnen, falls man es nochmal braucht
-    ######
-    # UND die Auswahlregeln für halbstunden Schritte TRUE ist ( unterschied von ersten auf
-    # dritten Zeitschritt = 1 UND von ersten auf zweiten = 0.5)
-    #if(tryCatch({
-    #  (as.numeric(substrRight(PointColumn[1],3))+1)%%24 ==
-    #   as.numeric(substrRight(PointColumn[3],3))%%24},
-    #  warning = function(war){
-    #   (as.numeric(substrRight(PointColumn[1],2))+1)%%24 ==
-    # as.numeric(substrRight(PointColumn[3],2))%%24
-    #   }) &&
-    #   (as.numeric(substrRight(PointColumn[1],2))+0.5)%%24 ==
-    #   as.numeric(substrRight(PointColumn[2],2))%%24){
-    #  # Anzahl der Zeitschritte pro Stunde, as numeric des ersten Zeitschritts,
-    #  # Größe der Minutenschritte
-    #  Steps <- 2
-    #  Nachkomma.Begin <- as.numeric(substrRight(PointColumn[1],2))
-    #  MinuteSteps <- 60/Steps
-    #  # Aufrunden der Zahl von 0.5 oder 1 auf 50(%) bzw 100(%)
-    #  repeat{
-    #    Nachkomma.Begin <- Nachkomma.Begin*10
-    #    if(round(Nachkomma.Begin,2)%%1==0){
-    #      Nachkomma.Begin <- Nachkomma.Begin*10
-    #      break
-    #    }
-    #  }
-    #  # Berechnung der StartMinute (0/60 oder 30),
-    #  # Erstellen eines Vektors bei dem zu Durchlauf  m*Minutesteps mit Modulo 60 dazu
-    #  # gezählt werden. In diesem Fall: 0, 30, 0, 30... oder 30, 0, 30, 0...
-    #  StartMinute <- Nachkomma.Begin*60/100
-    #  Minute.Entries <- c()
-    #  for(m in 0:(length(PointColumn)-1)){
-    #    Minute.Entries[m+1] <- round((StartMinute+m*MinuteSteps),0)%%60
-    #  }
-    #  # Erstellen des hourvectors, der die Stunde des Tages beeinhaltet
-    #  # Da das Format etwas unregelmäßig ist  4.00 Uhr -> 4
-    #  #                                       4.30 Uhr -> 4.5
-    #  # Muss ich alternieren mit den Anzahl der Zeichen, die ich rechts abschneide
-    #  #                                       4.3 -> substrRight(...,4)
-    #  #                                       4   -> substrRight(...,3)
-    #  # Die Reihenfolge is abhängig vom ersten Wert -> firstshort
-    #  if(Minute.Entries[1]==30){
-    #    firstshort <- FALSE
-    #  }
-    #  if(Minute.Entries[1]==0){
-    #    firstshort <- TRUE
-    #  }
-    #  hourvector <- c()
-    #  if(firstshort){
-    #    for(ho in 1:length(PointColumn)){
-    #      if(ho%%2==1){
-    #        hourvector[ho] <- substrRight(PointColumn[ho],3)
-    #      }
-    #      if(ho%%2==0){
-    #        hourvector[ho] <- substrRight(PointColumn[ho],4)
-    #      }
-    #    }
-    #  } else if(!firstshort){
-    #    for(ho in 1:length(PointColumn)){
-    #      if(ho%%2==1){
-    #        hourvector[ho] <- substrRight(PointColumn[ho],4)
-    #      }
-    #      if(ho%%2==0){
-    #        hourvector[ho] <- substrRight(PointColumn[ho],3)
-    #      }
-    #    }
-    #  }
-    #  # Die Stunden (4.5 oder 4) werden nun einfach abgerundet -> Stundenzahl
-    #  # und mit den Minuten gepastet (beide mit zwei Stellen -> 4.40 Uhr -> 04-40)
-    #  # Dazu wird das restliche Datum (NonHourlyDate) erstellt (UNFINISHED!)
-    #  # und wieder gepastet. Der Resultierende Vector is der Ausgabevektor
-    #  FinalTime <- paste(sprintf("%02d",floor(as.numeric(hourvector))), sprintf("%02d",Minute.Entries),
-    #                     sep="-")
-    #  NonHourlyDate <- substrLeft(PointColumn, 11)
-    #  DateVector <- paste(NonHourlyDate, FinalTime, sep="")
-    #  return(DateVector)
-    #} else{
-    #  # Falls keine %stunden Angabe vorliegt, wird der Eingabevector zurückgegeben
-    #####
+  if(!testvar){
     return(DateColumn)
   }
   # Falls testvar == TRUE, also %stunden Format vorliegt.
@@ -133,26 +54,40 @@ f.ConvertPercentageDate <- function(DateColumn){
     #                                       4.15 Uhr -> 4.25
     # Muss ich alternieren mit den Anzahl der Zeichen, die ich rechts abschneide
     # Hier unterscheide ich Variabel durch indize = abstand zu Standartlength
-    for(l in 1:length(PointColumn)){
-      indize              <- which((standartlength-Differences)==nchar(PointColumn[l]))
-      prevector           <- substrRight(PointColumn[l],(5-Differences[indize]))
-      # Falls nur ganze Stunden angegeben werden, ist 4 von rechts zu viel, das ":" wird
-      # mit "ausgeschnitten" -> if-Abfrage
-      if(grepl(":", prevector)){
-        hourvector[l]     <- as.numeric(substrRight(prevector, (nchar(prevector)-1)))
-      } else if(!grepl(":", prevector)){
-        hourvector[l]     <- as.numeric(prevector)
-        }
-      SaveIndize[l]       <- indize
+    SaveIndize <- vapply(PointColumn, FUN.VALUE = NA_real_,FUN = function(x){
+      as.numeric(which((standartlength-Differences)==nchar(x)))
+    })
 
-      # Vorläufige Schleife, die bei großen Datenmengen anzeigen kann, wie weit
-      # diese Schleife ist
-      if(length(PointColumn) > 17600){
-        if(l%%floor(length(PointColumn)/20)==0){
-          print(paste(ceiling(l/length(PointColumn)*100),"% of hourvector done"))
-        }
+    hourvector <- as.numeric(mapply(function(x,y){
+      prevector  <- substrRight(x, (5-Differences[y]))
+      if(grepl(":", prevector)){
+        as.numeric(substrRight(prevector, (nchar(prevector)-1)))
+      } else if(!grepl(":", prevector)){
+       as.numeric(prevector)
       }
-    }
+
+    }, x = PointColumn, y = index_2))
+
+    # for(l in 1:length(PointColumn)){
+    #   indize              <- which((standartlength-Differences)==nchar(PointColumn[l]))
+    #   prevector           <- substrRight(PointColumn[l],(5-Differences[indize]))
+    #   # Falls nur ganze Stunden angegeben werden, ist 4 von rechts zu viel, das ":" wird
+    #   # mit "ausgeschnitten" -> if-Abfrage
+    #   if(grepl(":", prevector)){
+    #     hourvector[l]     <- as.numeric(substrRight(prevector, (nchar(prevector)-1)))
+    #   } else if(!grepl(":", prevector)){
+    #     hourvector[l]     <- as.numeric(prevector)
+    #     }
+    #   SaveIndize[l]       <- indize
+    #
+    #   # Vorläufige Schleife, die bei großen Datenmengen anzeigen kann, wie weit
+    #   # diese Schleife ist
+    #   if(length(PointColumn) > 17600){
+    #     if(l%%floor(length(PointColumn)/20)==0){
+    #       print(paste(ceiling(l/length(PointColumn)*100),"% of hourvector done"))
+    #     }
+    #   }
+    # }
     # OneHour sucht mir die erste Stelle des Vector, an dem eine Stunde (hourvector[1]+1)
     # seit Beginn vergangen ist! Die Anzahl der Schritte ist OneHour-1:
     # Beispiel:

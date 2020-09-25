@@ -31,7 +31,7 @@ ReadDateCol.Only <- function(v.Path){
   Dist.Col <- c(24, rep(14, Count.Col - 1))                                 # hier comment und quote
   DateNum <- "cc"
   Col.Count <- paste(rep("c", Count.Col - 2), collapse = "")
-  v.WufiData <- readr::read_fwf(v.Path, col_positions = readr::fwf_widths(Dist.Col,
+  v.WufiData <- vroom::vroom(v.Path, col_positions = vroom::fwf_widths(Dist.Col,
                                                             col_names = NULL), skip = count.columns.line + 1 +
                            Count.Col, col_types = paste(DateNum, Col.Count,
                                                         sep = ""))
