@@ -66,7 +66,7 @@ f.ConvertPercentageDate <- function(DateColumn){
        as.numeric(prevector)
       }
 
-    }, x = PointColumn, y = index_2))
+    }, x = PointColumn, y = SaveIndize))
 
     # for(l in 1:length(PointColumn)){
     #   indize              <- which((standartlength-Differences)==nchar(PointColumn[l]))
