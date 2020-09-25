@@ -14,7 +14,7 @@ f.GetWufiPlusData_readr_b <- function(v.Path, select.columns = c()) {
   )
 
   count.columns.line <- which(apply(table, 1, grepl, pattern = "column"))
-  Count.Col          <- as.numeric(strsplit(table[count.columns.line, ], "columns:")[[1]][2])
+  Count.Col          <- as.numeric(gsub("[^\\d]+", "", table[count.columns.line, ], perl=TRUE))
   Col.Names          <- as.character((utils::read.table(v.Path,
     nrows = Count.Col,
     skip = count.columns.line, sep = "\t", comment = "", quote = NULL
